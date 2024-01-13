@@ -1,6 +1,6 @@
 package dev.fatma.userservicetestfinal.controllers;
 
-import dev.deepak.userservicetestfinal.dtos.*;
+import dev.fatma.userservicetestfinal.dtos.*;
 import dev.fatma.userservicetestfinal.dtos.*;
 import dev.fatma.userservicetestfinal.exception.SessionCountExceededException;
 import dev.fatma.userservicetestfinal.models.SessionStatus;

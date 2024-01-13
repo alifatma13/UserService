@@ -2,11 +2,14 @@ package dev.fatma.userservicetestfinal.services;
 
 import dev.fatma.userservicetestfinal.dtos.UserDto;
 import dev.fatma.userservicetestfinal.exception.SessionCountExceededException;
+import dev.fatma.userservicetestfinal.models.Role;
 import dev.fatma.userservicetestfinal.models.SessionStatus;
 import dev.fatma.userservicetestfinal.models.User;
 import dev.fatma.userservicetestfinal.models.Session;
 import dev.fatma.userservicetestfinal.repositories.SessionRepository;
 import dev.fatma.userservicetestfinal.repositories.UserRepository;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
 import org.apache.commons.lang3.time.DateUtils;
@@ -152,6 +155,24 @@ public class AuthService {
         if (sessionOptional.isEmpty()) {
             return null;
         }
+
+        Session session = sessionOptional.get();
+        if(session.getSessionStatus().equals(SessionStatus.ACTIVE)){
+            return  SessionStatus.ENDED;
+        }
+
+
+        if(session.getExpiringAt().before(new Date())){
+            return SessionStatus.ENDED;
+        }
+
+        //JWT decoding
+        Jws<Claims> jwsClaims = Jwts.parser().build().parseSignedClaims(token);
+
+        String email = jwsClaims.getPayload().get("email").toString();
+        List<Role> roles = (List<Role>) jwsClaims.getPayload().get("roles");
+        Date createdAt = (Date) jwsClaims.getPayload().get("createdAt");
+
 
         return SessionStatus.ACTIVE;
     }
