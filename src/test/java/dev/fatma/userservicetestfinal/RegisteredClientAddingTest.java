@@ -21,7 +21,7 @@ public class RegisteredClientAddingTest {
 
     @Inject
     private RegisteredClientRepository registeredClientRepository;
-    @Test
+  /*  @Test
     @Commit
     public void addRegisteredClient() {
         RegisteredClient oidcClient = RegisteredClient.withId(UUID.randomUUID().toString())
@@ -40,5 +40,5 @@ public class RegisteredClientAddingTest {
                 .build();
 
         registeredClientRepository.save(oidcClient);
-    }
+    }*/
 }
