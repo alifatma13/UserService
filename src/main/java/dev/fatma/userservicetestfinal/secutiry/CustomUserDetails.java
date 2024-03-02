@@ -1,42 +1,37 @@
 package dev.fatma.userservicetestfinal.secutiry;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import dev.fatma.userservicetestfinal.models.Role;
 import dev.fatma.userservicetestfinal.models.User;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
+import java.util.stream.Collectors;
 
+@JsonDeserialize(as = CustomUserDetails.class)
 @Getter
 @Setter
-@JsonDeserialize(as = CustomUserDetails.class)
-public class CustomUserDetails implements UserDetails  {
+@AllArgsConstructor
+@NoArgsConstructor
+public class CustomUserDetails implements UserDetails {
+
+
     private User user;
-
-    public CustomUserDetails() {}
-
-    public CustomUserDetails(User user) {
-        this.user = user;
-    }
 
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Set<Role> roles = user.getRoles();
-
-        Collection<CustomGrantedAuthority> customGrantedAuthorities = new ArrayList<>();
-        for (Role role : roles) {
-            customGrantedAuthorities.add(
-                    new CustomGrantedAuthority(role)
-            );
-        }
-        return customGrantedAuthorities;
+        return user.getRoles().stream().map(role -> {
+            CustomGrantedAuthority customGrantedAuthority = new CustomGrantedAuthority();
+            customGrantedAuthority.setRole(role);
+            return customGrantedAuthority;
+        }).toList();
     }
 
     @Override

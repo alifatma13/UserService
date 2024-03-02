@@ -1,8 +1,6 @@
 package dev.fatma.userservicetestfinal.controllers;
 
 import dev.fatma.userservicetestfinal.dtos.*;
-import dev.fatma.userservicetestfinal.dtos.*;
-import dev.fatma.userservicetestfinal.exception.SessionCountExceededException;
 import dev.fatma.userservicetestfinal.models.SessionStatus;
 import dev.fatma.userservicetestfinal.services.AuthService;
 import org.springframework.http.HttpStatus;
@@ -22,7 +20,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto> login(@RequestBody LoginRequestDto request) throws SessionCountExceededException {
+    public ResponseEntity<UserDto> login(@RequestBody LoginRequestDto request) {
         return authService.login(request.getEmail(), request.getPassword());
     }
 

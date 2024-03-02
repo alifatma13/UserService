@@ -1,7 +1,6 @@
 package dev.fatma.userservicetestfinal.services;
 
 import dev.fatma.userservicetestfinal.dtos.UserDto;
-import dev.fatma.userservicetestfinal.exception.SessionCountExceededException;
 import dev.fatma.userservicetestfinal.models.Role;
 import dev.fatma.userservicetestfinal.models.SessionStatus;
 import dev.fatma.userservicetestfinal.models.User;
@@ -12,6 +11,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.MacAlgorithm;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.MultiValueMapAdapter;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Service
@@ -35,7 +36,7 @@ public class AuthService {
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
 
-    public ResponseEntity<UserDto> login(String email, String password) throws SessionCountExceededException {
+    public ResponseEntity<UserDto> login(String email, String password) {
         Optional<User> userOptional = userRepository.findByEmail(email);
 
         if (userOptional.isEmpty()) {
@@ -52,30 +53,9 @@ public class AuthService {
         //Generating the token
         //String token = RandomStringUtils.randomAlphanumeric(30);
 
-        // Check the number of active sessions
-      /*  List<Session>sessionList =  sessionRepository.findAllByUser_id(user.getId());
-        if(sessionList.size()==2){
-            throw new SessionCountExceededException();
-        }*/
-
-
         // Create a test key suitable for the desired HMAC-SHA algorithm:
-
-        //String secret = UserservicetestfinalApplication.context.getEnvironment().getProperty("secretkey");
-        //System.out.println("secret"+ secret);
         MacAlgorithm alg = Jwts.SIG.HS256; //or HS384 or HS256
         SecretKey key = alg.key().build();
-
-
-        //Check if session is present and token is active, if not generate new token
-        /*Jws existingJWS;
-        for (Session session:sessionList) {
-            if(session.getUser().getEmail().equals(email) && session.getToken()!=null){
-                existingJWS = Jwts.parser().verifyWith(key).build().parseSignedClaims(session.getToken());
-            }
-        }*/
-
-
 
 //        String message = "{\n" +
 //                "  \"email\": \"harsh@scaler.com\",\n" +
@@ -157,22 +137,27 @@ public class AuthService {
         }
 
         Session session = sessionOptional.get();
-        if(session.getSessionStatus().equals(SessionStatus.ACTIVE)){
-            return  SessionStatus.ENDED;
-        }
 
-
-        if(session.getExpiringAt().before(new Date())){
+        if (!session.getSessionStatus().equals(SessionStatus.ACTIVE)) {
             return SessionStatus.ENDED;
         }
 
-        //JWT decoding
+        Date currentTime = new Date();
+        if (session.getExpiringAt().before(currentTime)) {
+            return SessionStatus.ENDED;
+        }
+
+        //JWT Decoding.
         Jws<Claims> jwsClaims = Jwts.parser().build().parseSignedClaims(token);
 
-        String email = jwsClaims.getPayload().get("email").toString();
+        // Map<String, Object> -> Payload object or JSON
+        String email = (String) jwsClaims.getPayload().get("email");
         List<Role> roles = (List<Role>) jwsClaims.getPayload().get("roles");
         Date createdAt = (Date) jwsClaims.getPayload().get("createdAt");
 
+//        if (restrictedEmails.contains(email)) {
+//            //reject the token
+//        }
 
         return SessionStatus.ACTIVE;
     }
@@ -184,7 +169,7 @@ eyJjdHkiOiJ0ZXh0L3BsYWluIiwiYWxnIjoiSFMyNTYifQ.
 SGVsbG8gV29ybGQh.
 EHQJBVvni4oDe_NEqnecIwNmOTUe_7Hs_jVW_XT-b1o
 
- */
+*/
 
 /*
 Task-1 : Implement limit on number of active sessions for a user.
